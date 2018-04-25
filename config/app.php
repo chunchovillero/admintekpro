@@ -167,7 +167,7 @@ return [
         /*
          * Package Service Providers...
          */
-
+        
         /*
          * Application Service Providers...
          */
@@ -177,7 +177,8 @@ return [
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
         Collective\Html\HtmlServiceProvider::class,
-        Caffeinated\Shinobi\ShinobiServiceProvider::class
+        Caffeinated\Shinobi\ShinobiServiceProvider::class,
+        JeroenNoten\LaravelAdminLte\ServiceProvider::class,
 
     ],
 
