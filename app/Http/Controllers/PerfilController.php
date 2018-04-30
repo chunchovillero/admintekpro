@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Perfil;
 use Illuminate\Http\Request;
+use Spatie\Activitylog\Models\Activity;
 
 class PerfilController extends Controller
 {
@@ -21,6 +22,8 @@ class PerfilController extends Controller
     
     public function index()
     {
+        $latestActivities = Activity::with('user')->latest()->limit(100)->get();
+        dd($latestActivities);
         return view('perfil/index');
     }
 

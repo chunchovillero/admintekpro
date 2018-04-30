@@ -105,10 +105,10 @@
 							<td>
 								<div class="row">
 									<div class="col-xs-4 col-md-4">
-										<a href="#" class="btn btn-primary btn-sm active" role="button">Ver</a>
+										 <a href="{{route('perfil.index', ['id' => $usuario->id])}}" class="btn btn-primary btn-sm active" role="button">Ver</a>
 									</div>
 									<div class="col-xs-4 col-md-4">
-										<a href="{{route('empresas.edit',['id' => $empresa->id])}}" class="btn btn-warning btn-sm active" role="button">Editar</a>
+										<a href="{{route('asignar.index',['id' => $usuario->id])}}" class="btn btn-warning btn-sm active" role="button">Asignar</a>
 									</div>
 									<div class="col-xs-4 col-md-4">
 										<form action="{{route('empresas.destroy', $empresa->id)}}" method="post">

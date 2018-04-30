@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Empresa;
+use App\Servicio;
+use App\Empresaservicio;
 use Illuminate\Http\Request;
 
 class EmpresaController extends Controller
@@ -15,8 +17,9 @@ class EmpresaController extends Controller
     public function index()
     {
 
-        $empresas = Empresa::get();
-        return view('empresas/index', compact('empresas'));
+        $empresas = Empresa::with('servicios')->get();
+        $servicios = Servicio::get();
+        return view('empresas/index', compact('empresas', 'servicios'));
     }
 
     /**
@@ -45,6 +48,13 @@ class EmpresaController extends Controller
         $empresa->name = $request->nombre;
         $empresa->save();
 
+        foreach ($request->servicios as $servicio) {
+            $ser=new Empresaservicio();
+            $ser->empresa_id = $empresa->id;
+            $ser->servicio_id = $servicio;
+            $ser->save();
+        }
+
         return redirect('empresas')->with('success', 'Se ha creado la empresa '.$request->nombre);
     }
 
@@ -65,9 +75,12 @@ class EmpresaController extends Controller
      * @param  \App\Empresa  $empresa
      * @return \Illuminate\Http\Response
      */
-    public function edit(Empresa $empresa)
+    public function edit($id)
     {
-        return view('empresas.edit', compact('empresa'));
+        $empresa=Empresa::where('id',$id)->first();
+        $servicios = Servicio::get();
+        $empresaservicio = Empresaservicio::where('empresa_id', $id)->get();
+        return view('empresas.edit', compact('empresa','servicios', 'empresaservicio'));
     }
 
     /**
@@ -77,21 +90,34 @@ class EmpresaController extends Controller
      * @param  \App\Empresa  $empresa
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Empresa $empresa)
+    public function update(Request $request,$id)
     {
-         // dd($empresa, $request);
+        
 
         $data = $this->validate($request, [
             'name'=>'required'
         ]);
 
+         // dd($request->name);
+
         // dd($empresa->name); 
 
-        $emp =  Empresa::find($empresa->id);
+        $emp =  Empresa::find($id);
         $emp->name = $request->name;
         $emp->save();
 
-         return redirect('empresas')->with('success', 'Se ha editado la empresa "'.$empresa->name.'" a "'.$request->name.'"');
+        $delete = Empresaservicio::where('empresa_id', $id)->delete();
+
+        foreach ($request->servicios as $servicio) {
+            $ser=new Empresaservicio();
+            $ser->empresa_id = $id;
+            $ser->servicio_id = $servicio;
+            $ser->save();
+        }
+
+
+
+        return redirect('empresas')->with('success', 'Se ha editado la empresa "'.$request->name);
     }
 
     /**
@@ -100,11 +126,11 @@ class EmpresaController extends Controller
      * @param  \App\Empresa  $empresa
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Empresa $empresa)
+    public function destroy($id)
     {
-        $emp = Empresa::find($empresa->id);
+        $emp = Empresa::find($id);
         $emp->delete();
 
-        return redirect('empresas')->with('success', 'Se ha eliminado La empresa "'.$empresa->name.'"');
+        return redirect('empresas')->with('success', 'Se ha eliminado La empresa "'.$emp->name.'"');
     }
 }

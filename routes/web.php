@@ -19,7 +19,11 @@ Route::middleware(['auth'])->group(function () {
 	});
 
 
-	Route::get('perfil', 'UsuarioController@perfil')->name('perfil.index');
+	Route::get('perfil/{id}', 'UsuarioController@perfil')->name('perfil.index');
+
+	Route::get('asignar/{id}', 'UsuarioController@asignar')->name('asignar.index');
+
+	Route::post('asignar/{id}', 'UsuarioController@asignarstore')->name('asignar.store');
 
 	//Roles
 	Route::post('roles/store', 'RoleController@store')->name('roles.store')
@@ -44,12 +48,36 @@ Route::middleware(['auth'])->group(function () {
 	->middleware('permission:roles.edit');
 
 
+	//Permisos
+	Route::post('permisos/store', 'PermisosController@store')->name('permisos.store')
+	->middleware('permission:roles.create');
+
+	Route::get('permisos', 'PermisosController@index')->name('permisos.index')
+	->middleware('permission:roles.index');
+
+	Route::get('permisos/create', 'PermisosController@create')->name('permisos.create')
+	->middleware('permission:roles.create');
+
+	Route::put('permisos/{role}', 'PermisosController@update')->name('permisos.update')
+	->middleware('permission:roles.edit');
+
+	Route::get('permisos/{role}', 'PermisosController@show')->name('permisos.show')
+	->middleware('permission:roles.show');
+
+	Route::delete('permisos/{role}', 'PermisosController@destroy')->name('permisos.destroy')
+	->middleware('permission:roles.destroy');
+
+	Route::get('permisos/{role}/edit', 'PermisosController@edit')->name('permisos.edit')
+	->middleware('permission:roles.edit');
+
+
 	//Users
 	Route::get('users', 'UsuarioController@index')->name('users.index')
 	->middleware('permission:users.index');
 
-	Route::put('users/{user}', 'UsuarioController@update')->name('users.update')
-	->middleware('permission:users.edit');
+	Route::get('users', 'UsuarioController@index')->name('users.index');
+	
+	Route::put('users/{user}', 'UsuarioController@update')->name('users.update');
 
 	Route::get('users/{user}', 'UsuarioController@show')->name('users.show')
 	->middleware('permission:users.show');
@@ -60,7 +88,7 @@ Route::middleware(['auth'])->group(function () {
 	Route::get('users/{user}/edit', 'UsuarioController@edit')->name('users.edit')
 	->middleware('permission:users.edit');
 
-	Route::resource('/usuarios', 'UsuarioController')->middleware('permission:users.edit');
+	Route::resource('/usuarios', 'UsuarioController')->middleware('permission:users.edit');	
 
 
 	//Products
@@ -107,6 +135,29 @@ Route::middleware(['auth'])->group(function () {
 	
 	Route::get('empresas/{product}/edit', 'EmpresaController@edit')->name('empresas.edit')
 	->middleware('permission:empresas.edit');
+
+	//Servicios
+	Route::post('servicios/store', 'ServicioController@store')->name('servicios.store')
+	->middleware('permission:servicios.create');
+	
+	Route::get('servicios', 'ServicioController@index')->name('servicios.index')
+	->middleware('permission:servicios.index');
+	
+	Route::get('servicios/create', 'ServicioController@create')->name('servicios.create')
+	->middleware('permission:servicios.create');
+	
+	Route::put('servicios/{product}', 'ServicioController@update')->name('servicios.update')
+	->middleware('permission:servicios.edit');
+	
+	Route::get('servicios/{product}', 'ServicioController@show')->name('servicios.show')
+	->middleware('permission:servicios.show');
+	
+	Route::delete('servicios/{product}', 'ServicioController@destroy')->name('servicios.destroy')
+	->middleware('permission:servicios.destroy');
+	
+	Route::get('servicios/{product}/edit', 'ServicioController@edit')->name('servicios.edit')
+	->middleware('permission:servicios.edit');
+
 
 });
 Auth::routes();

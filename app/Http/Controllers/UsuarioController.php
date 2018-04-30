@@ -6,6 +6,12 @@ use App\User;
 use App\Empresa;
 use Illuminate\Http\Request;
 use Illuminate\Http\Request\UsuarioRequest;
+use Spatie\Activitylog\Models\Activity;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use App\Role;
+use App\Roleuser;
+use Caffeinated\Shinobi\Models\Permission;
 
 class UsuarioController extends Controller
 {
@@ -33,7 +39,7 @@ class UsuarioController extends Controller
      */
     public function create()
     {
-        activity()->log('Vio usuariose');
+        activity()->log('Vio usuarios');
         return view('usuarios.create');
     }
 
@@ -107,22 +113,41 @@ class UsuarioController extends Controller
      * @param  \App\Empresa  $empresa
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Empresa $empresa)
+    public function update(Request $request, User $user)
     {
          // dd($empresa, $request);
 
-        $data = $this->validate($request, [
-            'name'=>'required'
-        ]);
+       $data = $this->validate($request, 
+        [
+            'nombre_completo'=>'required|min:3',
+            'password' => '',
+            'repassword' => 'required_with:password|same:password'      
+        ],
+        [
+            'nombre_completo.required' => 'El campo nombre completo es obligatorio',
+            'nombre_completo.min' => 'El campo nombre debe tener 6 caracteres como minimo',
+            'email.required' =>'El campo Email es obligatorio',
+            'email.email' => 'El campo Email debe ser un email válido',
+            'password.required' => 'El campo Contraseña es obligatorio',
+            'password.min' => 'El campo Contraseña debe tener 6 caracteres como minimo',
+            'repassword.required' => 'El campo Repita Contraseña es obligatorio',
+            'repassword.min' => 'El campo Repita Contraseña debe tener 6 caracteres como minimo',  
+        ]
+    );
 
         // dd($empresa->name); 
 
-        $emp =  Empresa::find($empresa->id);
-        $emp->name = $request->name;
-        $emp->save();
-
-        return redirect('empresas')->with('success', 'Se ha editado la empresa "'.$empresa->name.'" a "'.$request->name.'"');
+       $usuario =  User::find($user->id);
+       $usuario->name = $request->nombre_completo;
+       if($request->password != ""){
+        $usuario->password =  Hash::make($request->password);
     }
+
+    $usuario->save();
+
+    activity()->log('Actualizó su perfil');
+    return redirect('perfil/'.$user->id)->with('success', 'Se ha editado el perfil');
+}
 
     /**
      * Remove the specified resource from storage.
@@ -138,8 +163,41 @@ class UsuarioController extends Controller
         return redirect('empresas')->with('success', 'Se ha eliminado La empresa "'.$empresa->name.'"');
     }
 
-    public function perfil(){
-        $perfil = User::where('id',auth()->user()->id)->with('empresas')->first();
-        return view('perfil/index', compact('perfil'));
+    public function perfil($id){
+
+        activity()->log('Vio su perfil');
+        $latestActivities = Activity::where('causer_id',$id)->latest()->limit(100)->get();
+        $empresas = Empresa::get();
+        $perfil = User::where('id',$id)->with('empresas')->with('roles')->first();
+
+        $listrol = array();
+        foreach ($perfil->roles as $rol) {
+            array_push($listrol,$rol->id);
+        }
+        $roles = Role::with('permisos')->whereIn('id', $listrol)->get();
+        $permisos = Permission::get();
+
+        return view('perfil/index', compact('perfil','latestActivities','empresas','permisos','roles'));
+    }
+
+    public function asignar($id)
+    {
+        $perfil = User::where('id',$id)->with('empresas')->with('roles')->first();
+        $roles = Role::with('permisos')->get();
+        return view('usuarios/asignar', compact('perfil','roles'));
+    }
+
+    public function asignarstore(Request $request, $id)
+    {
+        
+        foreach ($request->roles as $roles) {
+            $asignar=new Roleuser();
+            $asignar->role_id = $roles;
+            $asignar->user_id = $id;
+            $asignar->save();  
+        }
+        
+        
+        return redirect('asignar/'.$id)->with('success', 'Se han asignado los roles');
     }
 }

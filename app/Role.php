@@ -8,4 +8,7 @@ class Role extends Model
 {
     protected $table = 'roles';
 
+    public function permisos(){
+		return $this->belongsToMany('\Caffeinated\Shinobi\Models\Permission');
+	} 
 }
