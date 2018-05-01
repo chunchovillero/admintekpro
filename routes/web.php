@@ -10,9 +10,20 @@
 |
 */
 
+
+// API Group Routes
+Route::group(array('prefix' => 'api/v1', 'middleware' => []), function () {
+	// Custom route added to standard Resource
+	Route::get('example/foo', 'UsuarioController@index');
+	// Standard Resource route
+	Route::resource('example', 'RoleController');
+});
+
+
 Auth::routes();
 Route::get('/home', 'HomeController@index')->name('home');
-Route::middleware(['auth'])->group(function () {
+
+Route::group(array('prefix' => '/', 'middleware' => ['auth']), function () {
 
 	Route::get('/', function () {
 		return view('home');

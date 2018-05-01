@@ -117,7 +117,7 @@ class UsuarioController extends Controller
     {
          // dd($empresa, $request);
 
-       $data = $this->validate($request, 
+     $data = $this->validate($request, 
         [
             'nombre_completo'=>'required|min:3',
             'password' => '',
@@ -137,9 +137,9 @@ class UsuarioController extends Controller
 
         // dd($empresa->name); 
 
-       $usuario =  User::find($user->id);
-       $usuario->name = $request->nombre_completo;
-       if($request->password != ""){
+     $usuario =  User::find($user->id);
+     $usuario->name = $request->nombre_completo;
+     if($request->password != ""){
         $usuario->password =  Hash::make($request->password);
     }
 
@@ -183,13 +183,19 @@ class UsuarioController extends Controller
     public function asignar($id)
     {
         $perfil = User::where('id',$id)->with('empresas')->with('roles')->first();
+
+        $listrol = array();
+        foreach ($perfil->roles as $rol) {
+            array_push($listrol,$rol->id);
+        }
         $roles = Role::with('permisos')->get();
-        return view('usuarios/asignar', compact('perfil','roles'));
+        $permisos = Permission::get();
+        return view('usuarios/asignar', compact('perfil','roles','permisos'));
     }
 
     public function asignarstore(Request $request, $id)
     {
-        
+        $delete = Roleuser::where('user_id', $id)->delete();
         foreach ($request->roles as $roles) {
             $asignar=new Roleuser();
             $asignar->role_id = $roles;
